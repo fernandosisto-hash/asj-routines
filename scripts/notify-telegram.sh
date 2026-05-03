@@ -1,30 +1,29 @@
 #!/usr/bin/env bash
 # notify-telegram.sh — envia mensagem pro Telegram da ASJ
 #
+# Funciona em DOIS modos:
+#   1) Local (no Mac do Fernando): lê de ~/.config/asj/telegram-token
+#   2) Cloud (Claude Routines): lê das env vars TELEGRAM_BOT_TOKEN e TELEGRAM_CHAT_ID
+#
 # Uso:
 #   ./scripts/notify-telegram.sh "texto da mensagem"
 #   echo "texto" | ./scripts/notify-telegram.sh
-#
-# Pré-requisito: arquivo ~/.config/asj/telegram-token com:
-#   TELEGRAM_BOT_TOKEN=...
-#   TELEGRAM_CHAT_ID=...
-#
-# As credenciais NÃO estão neste repo por segurança.
 
 set -euo pipefail
 
-CRED_FILE="${HOME}/.config/asj/telegram-token"
-
-if [[ ! -f "$CRED_FILE" ]]; then
-  echo "ERRO: arquivo de credenciais não encontrado em $CRED_FILE" >&2
-  exit 1
+# Modo cloud: env vars já presentes? Pula leitura de arquivo
+if [[ -z "${TELEGRAM_BOT_TOKEN:-}" || -z "${TELEGRAM_CHAT_ID:-}" ]]; then
+  CRED_FILE="${HOME}/.config/asj/telegram-token"
+  if [[ -f "$CRED_FILE" ]]; then
+    # shellcheck disable=SC1090
+    source "$CRED_FILE"
+  fi
 fi
 
-# shellcheck disable=SC1090
-source "$CRED_FILE"
-
 if [[ -z "${TELEGRAM_BOT_TOKEN:-}" || -z "${TELEGRAM_CHAT_ID:-}" ]]; then
-  echo "ERRO: TELEGRAM_BOT_TOKEN ou TELEGRAM_CHAT_ID ausentes em $CRED_FILE" >&2
+  echo "ERRO: TELEGRAM_BOT_TOKEN e/ou TELEGRAM_CHAT_ID não definidos." >&2
+  echo "  - Local: crie ~/.config/asj/telegram-token com as variáveis" >&2
+  echo "  - Cloud: defina como secrets na configuração do Routines" >&2
   exit 1
 fi
 
@@ -35,12 +34,13 @@ else
   MSG=$(cat)
 fi
 
-if [[ -z "$MSG" ]]; then
-  echo "ERRO: mensagem vazia" >&2
-  exit 1
+[[ -z "$MSG" ]] && { echo "ERRO: mensagem vazia" >&2; exit 1; }
+
+# Telegram limita 4096 chars por mensagem; trunca se necessário
+if [[ ${#MSG} -gt 4000 ]]; then
+  MSG="${MSG:0:3990}…[truncado]"
 fi
 
-# Envia (modo texto simples, sem markdown — mais robusto pra logs)
 RESP=$(curl -sf -X POST \
   "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
   -d "chat_id=${TELEGRAM_CHAT_ID}" \

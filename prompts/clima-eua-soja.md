@@ -118,3 +118,9 @@ Ao final, enviar a mensagem formatada para o canal Telegram configurado no Routi
 ## Status
 
 Versão 1 — testar manualmente antes de agendar.
+
+## Notas de execução
+
+- **No Routines (nuvem):** as variáveis `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID` ficam disponíveis como secrets configurados na rotina. O script `scripts/notify-telegram.sh` detecta automaticamente.
+- **Manual (local no Mac):** lê de `~/.config/asj/telegram-token`. Mesmo script funciona.
+- **Comando final do Claude:** após gerar o relatório, executar `echo "<relatório>" | bash scripts/notify-telegram.sh`
