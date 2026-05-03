@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "WebFetch",
+      "WebSearch"
+    ],
+    "ask": [
+      "Write",
+      "Edit",
+      "Bash"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(sudo:*)"
+    ]
+  },
+  "outputFormat": {
+    "language": "pt-BR",
+    "timezone": "America/Sao_Paulo"
+  }
+}
