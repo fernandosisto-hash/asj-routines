@@ -36,6 +36,7 @@ Responsável principal: Fernando Sisto Arantes (fernandosisto@agrosaojoao.com)
 Lista a evoluir conforme novas rotinas forem implementadas:
 
 - Relatório diário de cotações (soja, milho, boi, dólar, frete)
+- [ATIVO] Clima EUA × Soja — diário 20h via Telegram (ver prompts/clima-eua-soja.md)
 - Resumo matinal de notícias do agronegócio
 - Acompanhamento climático e alertas de chuva/seca
 - Monitoramento de concorrentes
