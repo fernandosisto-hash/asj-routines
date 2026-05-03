@@ -37,6 +37,7 @@ Lista a evoluir conforme novas rotinas forem implementadas:
 
 - Relatório diário de cotações (soja, milho, boi, dólar, frete)
 - [ATIVO v2] Clima EUA × Soja — diário 20h via Drive→Pipedream→Telegram, com anti-redundância (ver prompts/clima-eua-soja.md)
+- [ATIVO] Buzz Scanner — 3x/dia (7h, 13h, 19h), drivers upstream para soja/dólar/prêmio (ver prompts/buzz-scanner.md)
 - Resumo matinal de notícias do agronegócio
 - Acompanhamento climático e alertas de chuva/seca
 - Monitoramento de concorrentes
