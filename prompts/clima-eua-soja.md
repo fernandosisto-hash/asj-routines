@@ -3,71 +3,80 @@
 ## Contexto da rotina
 
 - **Frequência:** diária, às 20:00 (horário de Brasília)
-- **Destinatário:** Fernando Sisto (ASJ) via Telegram
+- **Destinatário:** Fernando Sisto (ASJ) via Drive → Pipedream → Telegram
 - **Por que 20h:** mercados de Chicago (CBOT) já fecharam; dados consolidados do dia disponíveis
 - **Objetivo:** entender o que o clima nos EUA está fazendo com a soja e qual o impacto esperado nos preços
 
-## O que o Claude deve fazer
+## Como o Claude deve atuar
 
-### 1. Identificar a fase do calendário
+### Etapa 1 — Verificar análise do dia anterior (anti-redundância)
 
-Consultar a data corrente e classificar o estágio das lavouras de soja nos EUA. Referência:
+ANTES de gerar o relatório novo:
 
-- **Abril–Maio:** plantio
-- **Junho:** emergência e desenvolvimento vegetativo
-- **Julho:** floração (R1–R3) — sensível a calor
-- **Agosto:** enchimento de grãos (R4–R6) — **fase mais crítica para produtividade**
-- **Setembro–Outubro:** maturação e colheita
+1. Liste arquivos da pasta `ASJ-Routines` no Drive (use o conector Drive)
+2. Encontre o arquivo mais recente com nome `clima-eua-soja-AAAA-MM-DD.md` (não o de hoje, o anterior)
+3. Leia o conteúdo desse arquivo
+4. Extraia da leitura: viés do dia (bullish/bearish/neutro), magnitude, fase atual, estados em alerta, notícia que moveu o dia anterior
 
-A análise deve ser focada nas variáveis climáticas que mais importam para o estágio atual.
+Se não encontrar arquivo anterior, prossiga normalmente para a Etapa 2 (relatório completo).
 
-### 2. Coletar dados das fontes oficiais
+### Etapa 2 — Coletar dados de hoje
 
-Buscar (via web search ou fetch) as informações mais recentes em:
+Pesquise dados atualizados em:
+- NOAA Climate Prediction Center (CPC) — previsões 6-10 e 8-14 dias
+- US Drought Monitor (drought.gov/usdm) — atualizado quintas
+- USDA NASS Crop Progress — atualizado segundas (apenas)
+- USDA WASDE — mensal
+- CBOT/Chicago — preços do dia
+- Headlines de mercado (geopolítica, demanda China, exportações)
 
-- **NOAA Climate Prediction Center (CPC):** previsões de 6–10 dias e 8–14 dias para precipitação e temperatura no Midwest
-- **US Drought Monitor (drought.gov/usdm):** índice semanal de seca por estado
-- **USDA NASS Crop Progress:** plantio %, emergência %, condição da lavoura % (publicado segundas durante a safra)
-- **National Weather Service (weather.gov):** previsões locais para Iowa, Illinois, Indiana, Minnesota, Nebraska
-- **USDA WASDE:** estimativas mais recentes de oferta/demanda (mensal)
+Sempre cite fonte e data/hora da informação consultada.
 
-Sempre citar fonte e data/hora da informação consultada.
+### Etapa 3 — Decisão: relatório completo ou mensagem curta?
 
-### 3. Mapear os principais estados produtores
+Compare hoje × ontem usando estes critérios. **Se TODOS forem iguais ou quase iguais**, gerar mensagem curta. **Se ALGUM mudou**, gerar relatório completo.
 
-Foco analítico em ordem de importância (top 9 produtores de soja dos EUA):
+**Critérios de "mudança relevante":**
 
-1. Illinois
-2. Iowa
-3. Minnesota
-4. Indiana
-5. Nebraska
-6. Ohio
-7. Missouri
-8. Dakota do Sul
-9. Kansas
+1. **Viés mudou?** Bullish → bearish, bearish → bullish, ou magnitude saltou (pequeno → grande, ou vice-versa). Pequena oscilação dentro da mesma direção NÃO é mudança.
+2. **Fase da safra mudou?** Plantio → emergência → vegetativo → floração → enchimento → maturação → colheita.
+3. **Algum estado-chave entrou ou saiu de alerta climático?** (Iowa, Illinois, Minnesota, Indiana, Nebraska, Ohio, Missouri, Dakota do Sul, Kansas)
+4. **Saiu Crop Progress hoje (segunda) e os números mudaram materialmente?** Diferença ≥5pp em condição boa/excelente, ou ritmo de plantio fora da expectativa.
+5. **Saiu WASDE ou outro relatório USDA importante?**
+6. **Notícia macro nova com impacto direto no preço?** Anúncio de tarifa, China, geopolítica, embargos, eventos climáticos extremos confirmados.
 
-Para cada estado relevante: chuva acumulada recente, anomalia de temperatura, status no Drought Monitor, previsão de 7 dias.
+### Etapa 4a — Se NENHUM critério mudou: mensagem curta
 
-### 4. Avaliar impacto de mercado
+Formato (até 800 caracteres):
 
-Cruzar condição climática × estágio da cultura × posição especulativa atual para concluir:
+```
+🌾 CLIMA EUA × SOJA — DD/MM/AAAA
 
-- **Viés bullish (alta de preço):** seca em estados-chave durante R3–R5, geadas precoces, atrasos significativos de plantio em vasta área
-- **Viés bearish (queda de preço):** chuvas regulares no Midwest durante enchimento, melhora ampla nas condições de lavoura, plantio adiantado
-- **Neutro:** clima dentro da normalidade
+✅ Sem alterações relevantes desde ontem.
+Análise mantida.
 
-Ser explícito sobre **incerteza**: se a previsão tem alta variância entre modelos (GFS vs ECMWF), mencionar.
+📅 Fase: [fase atual]
+💰 Viés: [bullish/bearish/neutro] [magnitude]
+🌡️ Drought Monitor: [estável | sem mudança esperada (próxima atualização: quinta)]
 
-## Formato do output (mensagem Telegram)
+👀 Próxima janela de mudança esperada:
+- [Ex: Crop Progress segunda 16h ET]
+- [Ex: WASDE 12/05]
+- [Ex: nova rodada de previsão NOAA quarta]
 
-A mensagem final deve caber em até 3500 caracteres. Estrutura sugerida:
+Coleta: HH:MM BRT
+```
+
+### Etapa 4b — Se algum critério mudou: relatório completo
+
+Use o formato abaixo. Limite: 3500 caracteres.
 
 ```
 🌾 CLIMA EUA × SOJA — DD/MM/AAAA
 
 ⚡ RESUMO (2 linhas)
 [viés bullish/bearish/neutro + driver principal do dia]
+[mudança em relação a ontem em 1 frase]
 
 📅 Fase atual: [plantio/vegetativo/floração/enchimento/colheita]
 Sensibilidade climática: [alta/média/baixa] para esta fase
@@ -77,10 +86,10 @@ Sensibilidade climática: [alta/média/baixa] para esta fase
 - Drought Monitor: [% da área de soja em D1+]
 - Estados em alerta: [listar até 3]
 
-🔮 PREVISÃO 7 DIAS
+🔮 PREVISÃO 7 DIAS (NOAA CPC)
 - Chuva: [acima/abaixo/normal]
 - Temperatura: [acima/abaixo/normal]
-- Eventos relevantes: [ondas de calor, sistemas frontais, etc.]
+- Eventos relevantes: [ondas de calor, frentes, etc.]
 
 📊 LAVOURA (último Crop Progress)
 - Plantio: X% (vs Y% média 5 anos)
@@ -89,19 +98,17 @@ Sensibilidade climática: [alta/média/baixa] para esta fase
 💰 IMPLICAÇÃO PREÇO
 - Viés: [bullish/bearish/neutro]
 - Magnitude esperada: [pequena/média/grande]
-- Razão em 1 frase: [explicar]
+- Razão em 1 frase
 
-📰 NOTÍCIA QUE MOVEU O DIA
+📰 MOVEU O DIA
 - [headline curta + fonte]
 
 👀 OBSERVAR AMANHÃ
-- [1-2 itens críticos pra acompanhar]
+- [1-2 itens críticos]
 
-Fontes: NOAA, USDA, US Drought Monitor
-Hora de coleta: HH:MM BRT
+Fontes: NOAA, USDA, US Drought Monitor, CBOT
+Coleta: HH:MM BRT
 ```
-
-Use emojis para legibilidade. Markdown simples (negrito ocasional). Evite tabelas — não renderizam bem no Telegram.
 
 ## Regras de qualidade
 
@@ -109,18 +116,15 @@ Use emojis para legibilidade. Markdown simples (negrito ocasional). Evite tabela
 - **Datas explícitas:** toda informação climática deve ter data de referência.
 - **Sem opinião especulativa:** o relatório descreve cenário e implicações prováveis baseadas em correlações históricas, não dá ordem de compra/venda.
 - **Idioma:** português do Brasil. Tecnicismos em inglês quando consagrados (CBOT, WASDE, R3, etc.).
-- **Comparação BRA × EUA:** mencionar brevemente quando relevante (ex.: "enquanto BR encerrou colheita em abril com 169 mt").
-
-## Envio
-
-Ao final, enviar a mensagem formatada para o canal Telegram configurado no Routines (chat_id do destinatário ASJ).
-
-## Status
-
-Versão 1 — testar manualmente antes de agendar.
+- **Comparação BRA × EUA:** mencionar brevemente quando relevante.
+- **Anti-redundância:** se nada mudou, mensagem curta. Não repetir o relatório completo só pra preencher.
 
 ## Notas de execução
 
-- **No Routines (nuvem):** as variáveis `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID` ficam disponíveis como secrets configurados na rotina. O script `scripts/notify-telegram.sh` detecta automaticamente.
-- **Manual (local no Mac):** lê de `~/.config/asj/telegram-token`. Mesmo script funciona.
-- **Comando final do Claude:** após gerar o relatório, executar `echo "<relatório>" | bash scripts/notify-telegram.sh`
+- **Etapa 1 (ler arquivo anterior):** use o conector Drive (search_files com `folder='ASJ-Routines'` ou list_recent_files). Se mais de um arquivo, pegue o de data mais recente que NÃO seja a de hoje.
+- **Sempre criar arquivo no Drive (mesmo no caso curto):** salva o histórico independente do conteúdo.
+- **No Routines (nuvem):** as variáveis e conector Drive já estão disponíveis na rotina.
+
+## Status
+
+Versão 2 — adiciona lógica anti-redundância. Testar manualmente antes do próximo run agendado.
